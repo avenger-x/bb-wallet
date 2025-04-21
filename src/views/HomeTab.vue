@@ -3,29 +3,16 @@
     <ion-header>
       <ion-toolbar>
         <ion-title>
-          <ion-avatar
-            @click="openTab('https://clear-wallet.flashsoft.eu/docs/')"
-            class="link-docs"
-            style="margin: 0.3rem; width: 1.6rem; height: 1.6rem; display: inline-flex"
-          >
+          <ion-avatar class="link-docs" style="margin: 0.3rem; width: 1.6rem; height: 1.6rem; display: inline-flex">
             <img alt="clw" :src="getUrl('assets/extension-icon/wallet_32.png')" />
           </ion-avatar>
-          <span
-            @click="openTab('https://clear-wallet.flashsoft.eu/docs/')"
-            class="link-docs"
-            style="position: absolute; top: 0.35rem; margin-left: 0.3rem"
-          >
+          <span class="link-docs" style="position: absolute; top: 0.35rem; margin-left: 0.3rem">
             <span style="font-size: 0.9rem; font-weight: bold; color: #aca3bb">
-              Clear
+              BB
             </span>
             <span style="font-size: 0.9rem; color: #aca3bb"> Wallet </span>
           </span>
-          <span
-            v-if="version"
-            @click="
-              openTab('https://clear-wallet.flashsoft.eu/docs/automated-changelog/')
-            "
-            style="
+          <span v-if="version" style="
               position: absolute;
               right: 1.1rem;
               margin-left: 0.3rem;
@@ -33,189 +20,121 @@
               font-weight: bold;
               font-size: 0.65rem;
               top: -1px;
-            "
-            class="link-docs"
-            >Version: {{ version }}</span
-          >
-          <span
-            class="github-icon"
-            @click="openTab('https://github.com/andrei0x309/clear-wallet/')"
-            ><GitHub
-          /></span>
+            " class="link-docs">Version: {{ version }}</span>
         </ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
       <ion-item v-if="loading || accounts.length < 1">
-        <ion-label>No EVM accounts found</ion-label>
-        <ion-button @click="goToAddAccount">Add Account</ion-button>
+        <ion-label>没有发现 EVM 钱包</ion-label>
       </ion-item>
       <ion-list v-else>
         <ion-item>
           <ion-label>
-            <span style="color: #aca3bb; font-weight: bold; font-size: 0.85rem"
-              >[ Selected Account ]:</span
-            >&nbsp;
+            <span style="color: #aca3bb; font-weight: bold; font-size: 0.85rem">[ 当前选择钱包 ]:</span>&nbsp;
 
-            {{ selectedAccount?.name }}</ion-label
-          >
-          <ion-button @click="openAccountsModal">Select</ion-button>
+            {{ selectedAccount?.name }}</ion-label>
+          <ion-button @click="openAccountsModal">选择</ion-button>
         </ion-item>
-        <ion-item
-          button
-          @click="
-            copyText(
-              settings?.copyLowerCaseAddress
-                ? selectedAccount?.address?.toLowerCase()
-                : selectedAccount?.address,
-              getToastRef()
-            )
-          "
-        >
+        <ion-item button @click="
+          copyText(
+            settings?.copyLowerCaseAddress
+              ? selectedAccount?.address?.toLowerCase()
+              : selectedAccount?.address,
+            getToastRef()
+          )
+          ">
           <p style="font-size: 0.7rem; color: #aca3bb">{{ selectedAccount?.address }}</p>
           <ion-icon style="margin-left: 0.5rem" :icon="copyOutline"></ion-icon>
         </ion-item>
-        <ion-item
-          v-if="!loading && selectedNetwork?.explorer && selectedAccount?.address"
-        >
-          <ion-button
-            @click="
-              openTab(
-                `${selectedNetwork.explorer}/address/${selectedAccount?.address}`.replace(
-                  '//',
-                  '/'
-                )
+        <ion-item v-if="!loading && selectedNetwork?.explorer && selectedAccount?.address">
+          <ion-button @click="
+            openTab(
+              `${selectedNetwork.explorer}/address/${selectedAccount?.address}`.replace(
+                '//',
+                '/'
               )
-            "
-            class="ion-text-wrap"
-            expand="block"
-            style="margin: auto; width: 98%; font-size: 0.8rem; padding: 0.6rem"
-            >View Address on
+            )
+            " class="ion-text-wrap" expand="block"
+            style="margin: auto; width: 98%; font-size: 0.8rem; padding: 0.6rem">在
             {{
               `${selectedNetwork.explorer}`
                 .replace("https://", "")
                 .replace("http://", "")
                 .replace(/\/.*/, "")
-            }}
+            }}上查看当前地址
           </ion-button>
         </ion-item>
       </ion-list>
       <ion-item v-if="loading || Object.keys(networks).length < 1">
-        <ion-label>No EVM Networks found</ion-label>
-        <ion-button @click="goToAddNetwork">Add Network</ion-button>
+        <ion-label>没有发现 EVM 网络</ion-label>
+        <ion-button @click="goToAddNetwork">添加网络</ion-button>
       </ion-item>
       <ion-item style="font-size: 0.86rem" v-else>
-        <ion-avatar
-          v-if="(allTemplateNets as any)[selectedNetwork?.chainId]?.icon"
-          style="margin-right: 1rem; width: 1.6rem; height: 1.6rem"
-        >
-          <img
-            :alt="selectedNetwork?.name"
-            :src="getUrl('assets/chain-icons/' + (allTemplateNets as any)[selectedNetwork?.chainId]?.icon)"
-          />
+        <ion-avatar v-if="(allTemplateNets as any)[selectedNetwork?.chainId]?.icon"
+          style="margin-right: 1rem; width: 1.6rem; height: 1.6rem">
+          <img :alt="selectedNetwork?.name"
+            :src="getUrl('assets/chain-icons/' + (allTemplateNets as any)[selectedNetwork?.chainId]?.icon)" />
         </ion-avatar>
-        <ion-label
-          button
-          @click="copyText(String(selectedNetwork?.chainId), getToastRef())"
-          style="cursor: pointer"
-        >
-          <span style="color: #aca3bb; font-weight: bold; font-size: 0.85rem"
-            >[ Selected Network ID ]:</span
-          >
+        <ion-label button @click="copyText(String(selectedNetwork?.chainId), getToastRef())" style="cursor: pointer">
+          <span style="color: #aca3bb; font-weight: bold; font-size: 0.85rem">[ 当前选择网络 ]:</span>
           &nbsp;
           <span style="font-weight: bold">{{ selectedNetwork?.chainId }}</span>
-          <ion-icon
-            style="margin-left: 0.5rem; top: 2px; position: relative"
-            :icon="copyOutline"
-          ></ion-icon>
+          <ion-icon style="margin-left: 0.5rem; top: 2px; position: relative" :icon="copyOutline"></ion-icon>
         </ion-label>
-        <ion-button
-          @click="
-            () => {
-              networksModal = true;
-              toastState = false;
-            }
-          "
-          >Select</ion-button
-        >
-      </ion-item>
-      <ion-item style="margin-top: 0.3rem; margin-bottom: 0.3rem; text-align: center">
-        <ion-button
-          @click="goToFarcasterActions"
-          expand="block"
-          style="margin: auto; width: 98%; font-size: 0.8rem; padding: 0.6rem"
-          >Experimental Farcaster Wallet Actions</ion-button
-        >
+        <ion-button @click="
+          () => {
+            networksModal = true;
+            toastState = false;
+          }
+        ">选择</ion-button>
       </ion-item>
 
-      <ion-item style="margin-top: 0.3rem; margin-bottom: 0.3rem; text-align: center">
-        <ion-button
-          @click="goToPersonalSign"
-          expand="block"
-          style="margin: auto; width: 98%; font-size: 0.8rem; padding: 0.6rem"
-          >Personal Sign Messages</ion-button
-        >
-      </ion-item>
-      <ion-item style="margin-top: 0.3rem">
-        <div class="display: flex; flex-direction: column">
-          <img
-            alt="stealthex"
-            @click="openTab('https://stealthex.io')"
-            id="exchange-btn"
-            :src="getUrl('assets/exchange-btn-min.svg')"
-            class="exchange-btn"
-            style=""
-          />
-          <p style="font-size: 0.75rem; opacity: 0.8; padding: 0.2rem">
-            This button does not contain any referral to maximize privacy.
-          </p>
-        </div>
-      </ion-item>
-      <ion-loading
-        :is-open="loading"
-        cssClass="my-custom-class"
-        message="Please wait..."
-        :duration="4000"
-        :key="`k${loading}`"
-        @didDismiss="loading = false"
-      >
+      <ion-loading :is-open="loading" cssClass="my-custom-class" message="Please wait..." :duration="4000"
+        :key="`k${loading}`" @didDismiss="loading = false">
       </ion-loading>
-      <ion-toast
-        position="top"
-        :is-open="toastState"
-        @didDismiss="toastState = false"
-        message="Copied to clipboard"
-        :duration="1500"
-      ></ion-toast>
+      <ion-toast position="top" :is-open="toastState" @didDismiss="toastState = false" message="Copied to clipboard"
+        :duration="1500"></ion-toast>
     </ion-content>
 
     <ion-modal :is-open="accountsModal" @ionModalDidPresent="accountModalPresented">
       <ion-header>
         <ion-toolbar>
           <ion-buttons slot="start">
-            <ion-button @click="accountsModal = false">Close</ion-button>
+            <ion-button @click="accountsModal = false">关闭</ion-button>
           </ion-buttons>
-          <ion-title>Select Account</ion-title>
+          <ion-title>选择钱包</ion-title>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="ion-padding">
-        <ion-list style="margin-bottom: 4rem">
+      <ion-content class="ion-padding" ref="contentRef">
+        <ion-list ref="">
           <ion-radio-group :value="selectedAccount?.address ?? ''">
             <ion-list-header>
-              <ion-searchbar
-                ref="accountSearchBar"
-                placeholder="search..."
-                autocomplete="off"
-                autocorrect="off"
-                :clear-input="false"
-                :clear-on-edit="false"
-                :spellcheck="false"
-                :tabindex="0"
-                @ionInput="searchAccount"
-              ></ion-searchbar>
+              <ion-searchbar ref="accountSearchBar" placeholder="search..." autocomplete="off" autocorrect="off"
+                :clear-input="false" :clear-on-edit="false" :spellcheck="false" :tabindex="0"
+                @ionInput="searchAccount"></ion-searchbar>
             </ion-list-header>
-
-            <ion-list
+            <RecycleScroller class="scroller" :items="filtredAccounts" :item-size="60" key-field="address"
+              v-slot="{ item }" ref="scroller" :style="{ height: accountsContainerHeight + 'px' }">
+              <ion-item @click="changeSelectedAccount(item.address)">
+                <ion-radio  :aria-label="item.name" :value="item.address" mode="ios"
+                  justify="start" color="warning" style="margin-left: 0.1rem">
+                  <div style="margin-left: 0.5rem">{{ item.name }}</div>
+                  <div style="margin-top: 0.1rem">
+                    <ion-text style="font-size: 0.65rem; color: coral">{{
+                      item.address.slice(0, 6)
+                    }}</ion-text>
+                    <ion-text style="font-size: 0.65rem">{{
+                      item.address.slice(6, -4)
+                    }}</ion-text>
+                    <ion-text style="font-size: 0.65rem; color: coral">{{
+                      item.address.slice(-4)
+                    }}</ion-text>
+                  </div>
+                </ion-radio>
+              </ion-item>
+            </RecycleScroller>
+            <!-- <ion-list
               @click="changeSelectedAccount(account.address)"
               class="ion-padding"
               v-for="account of filtredAccounts"
@@ -247,7 +166,7 @@
                   </div>
                 </ion-radio>
               </ion-item>
-            </ion-list>
+            </ion-list> -->
           </ion-radio-group>
         </ion-list>
       </ion-content>
@@ -265,50 +184,25 @@
         <ion-list style="margin-bottom: 4rem">
           <ion-radio-group :value="selectedNetwork.chainId">
             <ion-list-header>
-              <ion-searchbar
-                ref="networkSearchBar"
-                autocomplete="off"
-                autocorrect="off"
-                :clear-input="false"
-                :clear-on-edit="false"
-                :spellcheck="false"
-                :tabindex="0"
-                placeholder="search..."
-                @ionInput="searchNetwork"
-              ></ion-searchbar>
+              <ion-searchbar ref="networkSearchBar" autocomplete="off" autocorrect="off" :clear-input="false"
+                :clear-on-edit="false" :spellcheck="false" :tabindex="0" placeholder="search..."
+                @ionInput="searchNetwork"></ion-searchbar>
             </ion-list-header>
 
-            <ion-list
-              class="ion-padding"
-              v-for="network of filtredNetworks"
-              :key="network.chainId"
-            >
+            <ion-list class="ion-padding" v-for="network of filtredNetworks" :key="network.chainId">
               <ion-item>
-                <ion-radio
-                  @click="changeSelectedNetwork(network.chainId)"
-                  :value="network.chainId"
-                  :aria-label="network.name"
-                  slot="start"
-                  labelPlacement="start"
-                  mode="ios"
-                  justify="space-between"
-                  color="warning"
-                  style="padding: 0.5rem"
-                >
+                <ion-radio @click="changeSelectedNetwork(network.chainId)" :value="network.chainId"
+                  :aria-label="network.name" slot="start" labelPlacement="start" mode="ios" justify="space-between"
+                  color="warning" style="padding: 0.5rem">
                   <div>
-                    <ion-avatar
-                      v-if="(allTemplateNets as any)[network.chainId]?.icon"
-                      style="
+                    <ion-avatar v-if="(allTemplateNets as any)[network.chainId]?.icon" style="
                         margin-right: 0.5rem;
                         width: 1.4rem;
                         height: 1.4rem;
                         margin-bottom: 0.5rem;
-                      "
-                    >
-                      <img
-                        :alt="selectedNetwork?.name"
-                        :src="getUrl('assets/chain-icons/' + (allTemplateNets as any)[network.chainId]?.icon)"
-                      />
+                      ">
+                      <img :alt="selectedNetwork?.name"
+                        :src="getUrl('assets/chain-icons/' + (allTemplateNets as any)[network.chainId]?.icon)" />
                     </ion-avatar>
                     {{
                       (network.name?.length || 0) > 18
@@ -320,12 +214,10 @@
                     </span>
                   </div>
                   <div>
-                    <ion-text style="opacity: 0.9; font-size: 0.85rem"
-                      >RPC:&nbsp;</ion-text
-                    >
+                    <ion-text style="opacity: 0.9; font-size: 0.85rem">RPC:&nbsp;</ion-text>
                     <ion-text style="opacity: 0.8; font-size: 0.75rem">{{
                       network.rpc.replace("https://", "").replace("http://", "")
-                    }}</ion-text>
+                      }}</ion-text>
                   </div>
                 </ion-radio>
               </ion-item>
@@ -339,7 +231,6 @@
 
 <script lang="ts" setup>
 import { ref, Ref } from "vue";
-import LightModal from "@/components/misc/LightModal.vue";
 import {
   IonContent,
   IonHeader,
@@ -351,6 +242,7 @@ import {
   IonLabel,
   IonButton,
   onIonViewWillEnter,
+  onIonViewDidEnter,
   IonModal,
   IonRadioGroup,
   IonRadio,
@@ -362,6 +254,7 @@ import {
   IonIcon,
   IonAvatar,
   IonSearchbar,
+  modalController,
 } from "@ionic/vue";
 import {
   getAccounts,
@@ -379,13 +272,15 @@ import {
   getSettings,
   getVersion,
 } from "@/utils/platform";
+import { setUnlockModalState } from "@/utils/unlockStore";
 import type { Network, Account, Networks } from "@/extension/types";
 import { allTemplateNets } from "@/utils/networks";
 import router from "@/router";
 import { triggerListner } from "@/extension/listners";
 import { copyOutline } from "ionicons/icons";
-import GitHub from "@/components/icons/GitHub.vue";
-
+import UnlockModal from "@/views/UnlockModal.vue";
+import { walletIssetPassword } from '@/extension/userRequest'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 const version = getVersion();
 
 const loading = ref(false);
@@ -399,11 +294,28 @@ const selectedAccount = (ref(null) as unknown) as Ref<Account>;
 const selectedNetwork = (ref(null) as unknown) as Ref<Network>;
 const toastState = ref(false);
 const settings = ref({}) as Ref<Awaited<ReturnType<typeof getSettings>>>;
+const contentRef = ref(null) as Ref<any>
+const accountsContainerHeight = ref(0) as Ref<number>
 
 const accountSearchBar = ref<InstanceType<typeof IonSearchbar> | null>(null);
 const networkSearchBar = ref<InstanceType<typeof IonSearchbar> | null>(null);
 
 const getToastRef = () => toastState;
+
+const openModal = async () => {
+  const modal = await modalController.create({
+    component: UnlockModal,
+    animated: true,
+    focusTrap: false,
+    backdropDismiss: false,
+  });
+  await modal.present();
+  setUnlockModalState(true);
+  const { role } = await modal.onWillDismiss();
+  if (role === "confirm") return true;
+  setUnlockModalState(false);
+  return false;
+};
 
 const loadData = () => {
   loading.value = true;
@@ -428,24 +340,18 @@ const loadData = () => {
   loading.value = false;
 };
 
-onIonViewWillEnter(() => {
+
+
+onIonViewWillEnter(async () => {
+  let r = await walletIssetPassword()
+  if (!r) {
+    await openModal()
+  }
   loadData();
 });
 
-const goToAddAccount = () => {
-  router.push("/tabs/add-account");
-};
-
 const goToAddNetwork = () => {
   router.push("/tabs/add-network");
-};
-
-const goToFarcasterActions = () => {
-  router.push("/farcaster-actions");
-};
-
-const goToPersonalSign = () => {
-  router.push("/personal-sign");
 };
 
 const changeSelectedAccount = async (address: string) => {
@@ -515,12 +421,19 @@ const searchNetwork = (e: any) => {
 const openAccountsModal = () => {
   accountsModal.value = true;
   toastState.value = false;
+
 };
 
 const accountModalPresented = () => {
   if (accountSearchBar.value) {
     accountSearchBar?.value?.$el?.setFocus?.();
   }
+  if (contentRef.value.$el.clientHeight == 0) {
+    return
+  }
+  
+  accountsContainerHeight.value = contentRef.value.$el.clientHeight - 32 - 16 - 58 - 16 
+  // accountsContainerHeight.value = contentRef.value.clientHeight
 };
 
 const networkModalPresented = () => {
@@ -539,6 +452,7 @@ const networkModalPresented = () => {
   display: block;
   cursor: pointer;
 }
+
 .exchange-btn:hover {
   opacity: 0.8;
   transition: opacity 0.2s ease-in-out;

@@ -32,14 +32,10 @@ const routes: Array<RouteRecordRaw> = [
     path: '/request-network/:rid/:param/:website',
     component: () => import('@/views/RequestNetwork.vue'),
   },
-  {
-    path: '/farcaster-actions',
-    component: () => import('@/views/FarcasterActions.vue'),
-  },
-  {
-    path: '/personal-sign',
-    component: () => import('@/views/PersonalSign.vue'),
-  },
+  // {
+  //   path: '/personal-sign',
+  //   component: () => import('@/views/PersonalSign.vue'),
+  // },
   {
     path: '/tabs/',
     component: AppTabs,

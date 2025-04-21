@@ -2,41 +2,17 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Unlock to Proceed</ion-title>
+        <ion-title>解锁</ion-title>
         <ion-buttons slot="end">
-          <ion-button @click="close" color="primary">Close</ion-button>
+          <ion-button @click="close" color="primary">关闭</ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="ion-padding">
       <ion-list>
-        <ion-list v-if="unlockType === 'message'">
-          <ion-item>To continue signing the message, unlock wallet.</ion-item>
-          <ion-item>Closing will reject sigining the message.</ion-item>
-        </ion-list>
-        <ion-list v-else-if="unlockType === 'viewPk'">
-          <ion-item>To view the PK, unlock wallet.</ion-item>
-          <ion-item>Closing will not show the PK.</ion-item>
-        </ion-list>
-        <ion-list v-else-if="unlockType === 'delAcc'">
-          <ion-item>Storage Encrypted, unlock to delete account.</ion-item>
-          <ion-item>Closing will not delete the account.</ion-item>
-        </ion-list>
-        <ion-list v-else-if="unlockType === 'farcaster'">
-          <ion-item>PK decription required to proceed.</ion-item>
-          <ion-item>Closing will reject the request.</ion-item>
-        </ion-list>
-        <ion-list v-else-if="unlockType === 'addAccount'">
-          <ion-item>Storage Encrypted, unlock to add account.</ion-item>
-          <ion-item>Closing will not add the account.</ion-item>
-        </ion-list>
-        <ion-list v-else>
-          <ion-item>To continue sending the transaction, unlock wallet.</ion-item>
-          <ion-item>Closing will reject sending the transaction.</ion-item>
-        </ion-list>
         <ion-item>
-          <ion-label>Unlock Password</ion-label>
+          <ion-label>解锁密码</ion-label>
         </ion-item>
         <ion-list>
           <ion-item>
@@ -53,7 +29,7 @@
               :spellcheck="false"
               id="pass-input"
             >
-              <div slot="label"><ion-text color="danger">(Password)</ion-text></div>
+              <div slot="label"><ion-text color="danger">(密码)</ion-text></div>
             </ion-input>
 
             <!-- <ion-input
@@ -68,7 +44,7 @@
         </ion-list>
       </ion-list>
       <ion-item>
-        <ion-button @click="unlock">Confirm</ion-button>
+        <ion-button @click="unlock">确认</ion-button>
       </ion-item>
       <ion-alert
         :is-open="alertOpen"
@@ -110,7 +86,7 @@ import {
 import { getAccounts, replaceAccounts, saveSelectedAccount } from "@/utils/platform";
 import { decrypt, getCryptoParams } from "@/utils/webCrypto";
 import { unlockModalStateSubscribe, setUnlockModalState } from "@/utils/unlockStore";
-
+import { walletSetPassword } from '@/extension/userRequest'
 defineProps<{
   unlockType: string;
 }>();
@@ -129,17 +105,7 @@ const close = () => {
 const unlock = async () => {
   try {
     loading.value = true;
-    let accounts = await getAccounts();
-    const cryptoParams = await getCryptoParams(mpPass.value);
-    const accProm = accounts.map(async (a) => {
-      if (a.encPk) {
-        a.pk = await decrypt(a.encPk, cryptoParams);
-      }
-      return a;
-    });
-    accounts = await Promise.all(accProm);
-    await replaceAccounts(accounts);
-    await saveSelectedAccount(accounts[0]);
+    await walletSetPassword(mpPass.value)
     loading.value = false;
     return modalController?.dismiss(mpPass.value, "confirm");
   } catch {

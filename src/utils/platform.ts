@@ -1,4 +1,8 @@
+import { PassworderClient } from '@/client/passworder'
+import { PatronClient } from '@/client/patron_client'
+import { sha256 } from '@/client/utils'
 import type { Network, Account, Prices, Settings, Networks, HistoryItem, ContractActions, ContractAction, Contact } from '@/extension/types'
+import { walletGetAccounts } from '@/extension/userRequest'
 import type { Ref } from 'vue'
 
 const pottentialMissingSettings = ['copyLowerCaseAddress']
@@ -63,7 +67,12 @@ export const getContacts = async (): Promise<Contact[]> => {
 
 export const saveContact = async (contact: Contact): Promise<void> => {
     const savedContacts = await getContacts()
-    await storageSave('contacts', [contact, ...savedContacts])
+    let contactMap = {}
+    for(let contact of savedContacts) {
+        contactMap[contact.address] = contact
+    }
+    contactMap[contact.address] = contact
+    await storageSave('contacts', Object.values(contactMap))
 }
 
 export const replaceContacts = async (contacts: Contact[]): Promise<void> => {
@@ -71,7 +80,24 @@ export const replaceContacts = async (contacts: Contact[]): Promise<void> => {
 }
 
 export const getAccounts = async (): Promise<Account[]> => {
-    return (await storageGet('accounts')).accounts ?? [] as Account[]
+    console.log("?")
+    let contacts = await getContacts()
+    let contactMap = {}
+    for(let contact of contacts) {
+        contactMap[contact.address.toLocaleLowerCase()] = contact.name
+    }
+    let accounts = await walletGetAccounts()
+    return accounts.map((account, i) => {
+        let name = contactMap[account.toLocaleLowerCase()]
+        if(!name) {
+            name = 'wallet ' + (i + 1)
+        }
+        
+        return {
+            name,
+            address: account
+        }
+    })
 }
 
 export const saveAccount = async (account: Account): Promise<void> => {
@@ -250,17 +276,6 @@ export const smallRandomString = (size = 7) => {
     }
 }
 
-export const clearPk = async (): Promise<void> => {
-    let accounts = await getAccounts()
-    const accProm = accounts.map(async a => {
-        if(a.encPk) {
-            a.pk = ''
-        }
-      return a
-    })
-    accounts = await Promise.all(accProm)
-    await Promise.all([replaceAccounts(accounts), saveSelectedAccount(accounts[0])])
-}
 
 export const hexTostr = (hexStr: string) => {
     if (hexStr.substring(0, 2) !== '0x') {

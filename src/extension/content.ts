@@ -38,6 +38,7 @@ const allowedMethods = {
 }
 
 window.addEventListener("message", (event) => {
+  console.log("??")
   if (event.source != window)
     return;
   if (event?.data?.type === "CLWALLET_CONTENT") {
@@ -113,6 +114,7 @@ window.addEventListener("message", (event) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 chrome.runtime.onMessage.addListener((message: any, sender, sendResponse) => {
+  console.log("?2")
   if (chrome.runtime.lastError) {
     console.warn("Error receiving message:", chrome.runtime.lastError);
   }

@@ -48,5 +48,8 @@ export default defineConfig({
   ],
   server: {
     port: 4766
+  },
+  legacy: {
+    skipWebSocketTokenCheck: true
   }
 })

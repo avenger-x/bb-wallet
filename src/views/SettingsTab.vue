@@ -7,86 +7,6 @@
     </ion-header>
     <ion-content class="ion-padding">
       <ion-accordion-group :value="defaultAccordionOpen" v-if="!loading">
-        <ion-accordion value="1">
-          <ion-item slot="header" color="light">
-            <ion-label>Security</ion-label>
-          </ion-item>
-          <div class="ion-padding" slot="content">
-            <ion-list>
-              <ion-item v-if="noAccounts"
-                >You need at least one account to touch this settings</ion-item
-              >
-              <ion-list :disabled="noAccounts">
-                <ion-item>
-                  <ion-label>Enable Storage Encryption</ion-label>
-                  <ion-toggle
-                    aria-label="Enable Storage Encryption"
-                    :key="updateKey"
-                    @ion-change="changeEncryption"
-                    slot="end"
-                    :checked="settings.s.enableStorageEnctyption"
-                  ></ion-toggle>
-                </ion-item>
-                <ion-item>
-                  This will require to input an encrypto key when storage is locked.
-                </ion-item>
-              </ion-list>
-              <ion-item :disabled="!settings.s.enableStorageEnctyption">
-                <ion-label>Enable Auto Lock</ion-label>
-                <ion-toggle
-                  aria-label="Enable Auto Lock"
-                  :key="updateKey"
-                  @ion-change="changeAutoLock"
-                  slot="end"
-                  :checked="settings.s.lockOutEnabled"
-                ></ion-toggle>
-              </ion-item>
-              <ion-list>
-                <ion-item
-                  :disabled="
-                    !settings.s.enableStorageEnctyption || !settings.s.lockOutEnabled
-                  "
-                >
-                  <ion-label>Auto-lock Period: (2-120) minutes</ion-label>
-                </ion-item>
-                <ion-item
-                  :disabled="
-                    !settings.s.enableStorageEnctyption || !settings.s.lockOutEnabled
-                  "
-                >
-                  <ion-input
-                    :key="updateKey"
-                    v-model="settings.s.lockOutPeriod"
-                    type="number"
-                  ></ion-input>
-                </ion-item>
-                <ion-item
-                  :disabled="
-                    !settings.s.enableStorageEnctyption || !settings.s.lockOutEnabled
-                  "
-                >
-                  <ion-button @click="setTime">Set Auto-lock</ion-button>
-                </ion-item>
-              </ion-list>
-              <ion-list>
-                <ion-item>
-                  <ion-label>Permanent Lock</ion-label>
-                  <ion-toggle
-                    aria-label="Permanent Lock"
-                    @ion-change="changePermaLock"
-                    :key="updateKey"
-                    slot="end"
-                    :disabled="!settings.s.enableStorageEnctyption"
-                    :checked="settings.s.encryptAfterEveryTx"
-                  ></ion-toggle>
-                </ion-item>
-                <ion-item
-                  >Will require decrypt pass before any sign or transaction</ion-item
-                >
-              </ion-list>
-            </ion-list>
-          </div>
-        </ion-accordion>
         <ion-accordion value="2">
           <ion-item slot="header" color="light">
             <ion-label>Theme & Misc</ion-label>
@@ -124,71 +44,25 @@
         </ion-accordion>
         <ion-accordion value="3">
           <ion-item slot="header" color="light">
-            <ion-label>About</ion-label>
-          </ion-item>
-          <div class="ion-padding" slot="content">
-            <p>
-              Clear EVM Wallet (CLW) is a fully open-source wallet built with Vue, Ionic,
-              and Ethers.
-            </p>
-            <p>
-              Unlike most wallets, this wallet has no ads, no analytics, no trackers, no
-              bloatware, no telemetry, no data collection, no sponsored content, no
-              sponsored Dapps, no sponsored tokens, no sponsored NFTs, no sponsored
-              anything. It is a clean wallet with no revenue model, made by a single
-              developer, if you want to support this project financially you can donate at
-              andrei0x309.eth.
-            </p>
-            <p>
-              Github Repo:
-              <a href="#" @click="openTab('https://github.com/andrei0x309/clear-wallet')"
-                >LINK</a
-              >
-            </p>
-            <p>
-              Docs Website:
-              <a href="#" @click="openTab('https://clear-wallet.flashsoft.eu')">LINK</a>
-            </p>
-            <br />
-            <p style="margin-bottom: 0.2rem">Places you can check me out:</p>
-            <p>
-              Github andrei0x309 -
-              <a href="#" @click="openTab('https://github.com/andrei0x309')">LINK</a>
-            </p>
-            <p>
-              Mirror Profile
-              <a href="#" @click="openTab('https://mirror.xyz/andrei0x309.eth')">LINK</a>
-            </p>
-            <p>
-              Blog Flashsoft
-              <a href="#" @click="openTab('https://blog.flashsoft.eu')">LINK</a>
-            </p>
-          </div>
-        </ion-accordion>
-        <ion-accordion value="4">
-          <ion-item slot="header" color="light">
-            <ion-label> Import / Export Accounts</ion-label>
-          </ion-item>
-          <div class="ion-padding" slot="content">
-            <ion-item>
-              <ion-label>Import Additional Accounts</ion-label>
-              <input ref="importFile" type="file" accept=".json" />
-              <ion-button color="warning" @click="importAcc">Import</ion-button>
-            </ion-item>
-            <ion-item>
-              <ion-label>Export All Accounts</ion-label>
-              <ion-button color="warning" @click="exportAcc">Export</ion-button>
-            </ion-item>
-          </div>
-        </ion-accordion>
-        <ion-accordion value="5">
-          <ion-item slot="header" color="light">
             <ion-label>Danger</ion-label>
           </ion-item>
           <div class="ion-padding" slot="content">
             <ion-item>
               <ion-label>WIPE All DATA</ion-label>
               <ion-button color="danger" @click="wipeStorage">PERMA WIPE</ion-button>
+            </ion-item>
+          </div>
+        </ion-accordion>
+        <ion-accordion value="4">
+          <ion-item slot="header" color="light">
+            <ion-label>Patron</ion-label>
+          </ion-item>
+          <div class="ion-padding" slot="content">
+            <ion-item>
+              <ion-input label="UUID"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input label=""></ion-input>
             </ion-item>
           </div>
         </ion-accordion>
@@ -209,88 +83,6 @@
         @didDismiss="loading = false"
       >
       </ion-loading>
-      <ion-modal
-        :is-open="mpModal"
-        @did-dismiss="
-          mpModal = false;
-          modalDismiss();
-        "
-      >
-        <ion-header>
-          <ion-toolbar>
-            <ion-buttons slot="start">
-              <ion-button
-                @click="
-                  modalGetPassword?.reject
-                    ? (() => {
-                        modalGetPassword.reject();
-                        modalGetPassword = null;
-                      })()
-                    : (mpModal = false)
-                "
-                >Close</ion-button
-              >
-            </ion-buttons>
-            <ion-title v-if="!settings.s.enableStorageEnctyption"
-              >Create Encryption Password</ion-title
-            >
-            <ion-title v-else>Enter Encryption Password</ion-title>
-          </ion-toolbar>
-        </ion-header>
-        <ion-content class="ion-padding">
-          <ion-list v-if="settings.s.enableStorageEnctyption">
-            <ion-item>
-              <ion-label>Old Password</ion-label>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                aria-label="password"
-                v-model="mpPass"
-                type="password"
-              ></ion-input>
-            </ion-item>
-          </ion-list>
-          <div v-else>
-            <ion-list>
-              <ion-item>
-                <ion-label>New Password</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-input
-                  aria-label="password"
-                  v-model="mpPass"
-                  type="password"
-                ></ion-input>
-              </ion-item>
-            </ion-list>
-            <ion-list>
-              <ion-item>
-                <ion-label>Confirm</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-input
-                  aria-label="password"
-                  v-model="mpConfirm"
-                  type="password"
-                ></ion-input>
-              </ion-item>
-            </ion-list>
-          </div>
-          <ion-item>
-            <ion-button
-              @click="
-                modalGetPassword?.resolve
-                  ? (() => {
-                      modalGetPassword.resolve();
-                      modalGetPassword = null;
-                    })()
-                  : confirmModal()
-              "
-              >Confirm</ion-button
-            >
-          </ion-item>
-        </ion-content>
-      </ion-modal>
       <ion-alert
         :is-open="alertOpen"
         :header="alertHeader"
@@ -340,7 +132,7 @@ import {
   IonAlert,
   IonToast,
 } from "@ionic/vue";
-
+console.log("shit")
 const loading = ref(true);
 const mpModal = ref(false);
 const mpPass = ref("");
@@ -376,11 +168,6 @@ const saveSettings = async () => {
   loading.value = false;
 };
 
-const setEncryptToggle = (state: boolean) => {
-  settings.s.enableStorageEnctyption = state;
-  updateKey.value++;
-  defaultAccordionOpen.value = "1";
-};
 
 const changeAutoLock = async () => {
   settings.s.lockOutEnabled = !settings.s.lockOutEnabled;
@@ -411,79 +198,6 @@ const changeTheme = async (theme: "system" | "light" | "dark") => {
   defaultAccordionOpen.value = "2";
 };
 
-const changeEncryption = async () => {
-  loading.value = true;
-  mpModal.value = true;
-  loading.value = false;
-};
-
-const confirmModal = async () => {
-  loading.value = true;
-  if (mpPass.value.length < 3) {
-    loading.value = false;
-    alertHeader.value = "Error";
-    alertMsg.value = "Password is too short. More than 3 characters are required.";
-    alertOpen.value = true;
-    setEncryptToggle(settings.s.enableStorageEnctyption);
-    return;
-  }
-
-  if (!settings.s.enableStorageEnctyption) {
-    if (mpPass.value !== mpConfirm.value) {
-      loading.value = false;
-      alertHeader.value = "Error";
-      alertMsg.value = "Password and confirm password do not match";
-      alertOpen.value = true;
-      setEncryptToggle(settings.s.enableStorageEnctyption);
-      return;
-    }
-    let accounts = await getAccounts();
-    const cryptoParams = await getCryptoParams(mpPass.value);
-    const accProm = accounts.map(async (a) => {
-      a.encPk = await encrypt(a.pk, cryptoParams);
-      a.pk = "";
-      return a;
-    });
-    accounts = await Promise.all(accProm);
-    await replaceAccounts(accounts);
-    await saveSelectedAccount(accounts[0]);
-    setEncryptToggle(true);
-    await setSettings(settings.s);
-    mpPass.value = "";
-    mpConfirm.value = "";
-    mpModal.value = false;
-  } else {
-    try {
-      let accounts = await getAccounts();
-      const cryptoParams = await getCryptoParams(mpPass.value);
-      const accProm = accounts.map(async (a) => {
-        if (a.encPk) {
-          a.pk = await decrypt(a.encPk, cryptoParams);
-        }
-        return a;
-      });
-      accounts = await Promise.all(accProm);
-      await replaceAccounts(accounts);
-      await saveSelectedAccount(accounts[0]);
-      setEncryptToggle(false);
-      settings.s.lockOutEnabled = false;
-      settings.s.encryptAfterEveryTx = false;
-      await setSettings(settings.s);
-      mpPass.value = "";
-      mpConfirm.value = "";
-      mpModal.value = false;
-    } catch (error) {
-      loading.value = false;
-      alertHeader.value = "Error";
-      alertMsg.value = "Decryption failed, password is not correct.";
-      alertOpen.value = true;
-      setEncryptToggle(settings.s.enableStorageEnctyption);
-      return;
-    }
-  }
-
-  loading.value = false;
-};
 
 const validateFile = () => {
   return new Promise((resolve) => {
@@ -533,100 +247,7 @@ const getPassword = () => {
   });
 };
 
-const promptForPassword = async (accounts: Account[]) => {
-  let isCorectPass = false;
-  do {
-    try {
-      await getPassword();
-      modalGetPassword.value = null;
-    } catch {
-      alertHeader.value = "Error";
-      alertMsg.value = "Password is required!";
-      alertOpen.value = true;
-      mpModal.value = false;
-      return false;
-    }
-    try {
-      const cryptoParams = await getCryptoParams(mpPass.value);
-      if (accounts?.[0]?.encPk) {
-        await decrypt(accounts[0].encPk, cryptoParams);
-      }
-      isCorectPass = true;
-    } catch {
-      isCorectPass = false;
-      alertHeader.value = "Error";
-      alertMsg.value = "Password is wrong!";
-      alertOpen.value = true;
-    }
-  } while (!isCorectPass);
-  return true;
-};
 
-const importAcc = async () => {
-  const validation = (await validateFile()) as { error: any };
-  if (validation.error) {
-    alertMsg.value = validation.error;
-    alertOpen.value = true;
-    return;
-  }
-  const accounts = await getAccounts();
-  const newAccounts = ((validation as unknown) as { json: Account[] }).json;
-  if (settings.s.enableStorageEnctyption) {
-    const hasPass = await promptForPassword(accounts);
-    if (hasPass) {
-      const cryptoParams = await getCryptoParams(mpPass.value);
-      const accProm = newAccounts.map(async (a) => {
-        if (a.pk.length === 64) {
-          a.pk = `0x${a.pk}`;
-        }
-        a.encPk = await encrypt(a.pk, cryptoParams);
-        return a;
-      });
-      const encNewAccounts = await Promise.all(accProm);
-      await replaceAccounts([...accounts, ...encNewAccounts]);
-      alertHeader.value = "Success";
-      alertMsg.value = "Successfully imported new accounts.";
-      alertOpen.value = true;
-      noAccounts.value = false;
-    }
-    return false;
-  } else {
-    await replaceAccounts([
-      ...accounts,
-      ...newAccounts.map((a) => {
-        a.encPk = "";
-        return a;
-      }),
-    ]);
-    alertHeader.value = "Success";
-    alertMsg.value = "Successfully imported new accounts.";
-    alertOpen.value = true;
-    noAccounts.value = false;
-  }
-};
-
-const exportAcc = async () => {
-  const accounts = await getAccounts();
-  if (!accounts.length) {
-    alertMsg.value = "You need at least one account to export.";
-    alertOpen.value = true;
-  }
-  if (settings.s.enableStorageEnctyption) {
-    const hasPass = await promptForPassword(accounts);
-    if (hasPass) {
-      const cryptoParams = await getCryptoParams(mpPass.value);
-      const accProm = accounts.map(async (a) => {
-        a.pk = await decrypt(a.encPk, cryptoParams);
-        return a;
-      });
-      const encNewAccounts = await Promise.all(accProm);
-      exportFile("wallet_export.json", JSON.stringify(encNewAccounts, null, 2));
-    }
-    return false;
-  } else {
-    exportFile("wallet_export.json", JSON.stringify(accounts, null, 2));
-  }
-};
 
 onIonViewWillEnter(async () => {
   await Promise.all([
@@ -658,7 +279,4 @@ const setTime = async () => {
   toastState.value = true;
 };
 
-const modalDismiss = () => {
-  setEncryptToggle(settings.s.enableStorageEnctyption);
-};
 </script>

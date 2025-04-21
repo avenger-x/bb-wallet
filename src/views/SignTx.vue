@@ -4,7 +4,7 @@
       <ion-toolbar>
         <ion-title>
           <p style="margin-bottom: 0.5rem">
-            Send Transaction
+            发送交易
             {{
               `${
                 intialSelectedAccount?.name
@@ -23,7 +23,7 @@
               margin-left: 0.5rem;
             "
           >
-            Sending from: {{ intialSelectedAccount?.address }}
+            来自: {{ intialSelectedAccount?.address }}
           </p>
           <p
             v-if="website"
@@ -35,7 +35,7 @@
               margin-left: 0.5rem;
             "
           >
-            Request from domain: <b>{{ website }}</b>
+            请求域名: <b>{{ website }}</b>
           </p>
           <p style="margin: 0; padding: 0; margin-top: 0.5rem; font-size: 0">&nbsp;</p>
         </ion-title>
@@ -44,7 +44,7 @@
 
     <ion-content class="ion-padding">
       <ion-item
-        ><ion-label>Network Name: {{ selectedNetwork?.name }}</ion-label></ion-item
+        ><ion-label>网络名称: {{ selectedNetwork?.name }}</ion-label></ion-item
       >
       <ion-item>
         <ion-avatar
@@ -56,22 +56,22 @@
             :src="getUrl('assets/chain-icons/' + (allTemplateNets as any)[selectedNetwork?.chainId]?.icon)"
           />
         </ion-avatar>
-        <ion-label>Network ID: {{ selectedNetwork?.chainId }}</ion-label>
+        <ion-label>网络ID: {{ selectedNetwork?.chainId }}</ion-label>
       </ion-item>
       <ion-item>
-        <ion-label>Transaction to Sign &amp; Send</ion-label>
+        <ion-label>待签署&发送的 &amp; 交易</ion-label>
       </ion-item>
       <ion-item>
-        Last Balance: {{ userBalance }}
+        执行前余额: {{ userBalance }}
         <span
           style="font-size: 0.9rem; opacity: 0.7; margin-left: 1rem"
           v-if="dollarPrice > 0"
           >${{ (dollarPrice * userBalance).toFixed(3) }}</span
         >
       </ion-item>
-      <ion-item> Contract: {{ contract }} </ion-item>
+      <ion-item> 合约地址: {{ contract }} </ion-item>
       <ion-item>
-        Tx Total Cost: {{ totalCost }}
+        总花费: {{ totalCost }}
         <span
           style="font-size: 0.9rem; opacity: 0.7; margin-left: 1rem"
           v-if="dollarPrice > 0"
@@ -79,7 +79,7 @@
         >
       </ion-item>
       <ion-item>
-        Gas Fee: {{ gasFee }}
+        手续费: {{ gasFee }}
         <span
           style="font-size: 0.9rem; opacity: 0.7; margin-left: 1rem"
           v-if="dollarPrice > 0"
@@ -90,13 +90,13 @@
       <ion-item>
         Gas Limit: {{ gasLimit }}
         <ion-button style="margin-left: 1rem" @click="gasLimitModal = true"
-          >Set manually</ion-button
+          >设置</ion-button
         >
       </ion-item>
       <ion-item>
         Gas Price: {{ gasPrice }}
         <ion-button style="margin-left: 1rem" @click="gasPriceModal = true"
-          >Set manually</ion-button
+          >设置</ion-button
         >
       </ion-item>
       <ion-item>
@@ -111,9 +111,9 @@
         ></ion-textarea>
       </ion-item>
       <ion-item>
-        <ion-button @click="onCancel">Cancel</ion-button>
+        <ion-button @click="onCancel">取消</ion-button>
         <ion-button :disabled="insuficientBalance" @click="onSign">{{
-          insuficientBalance ? "Insuficient Balance" : "Send"
+          insuficientBalance ? "余额不足" : "发送"
         }}</ion-button>
       </ion-item>
       <ion-alert
@@ -146,7 +146,7 @@
             <ion-buttons slot="start">
               <ion-button @click="gasLimitModal = false">Close</ion-button>
             </ion-buttons>
-            <ion-title>Set Gas Limit</ion-title>
+            <ion-title>设置 Gas Limit</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-content class="ion-padding">
@@ -162,7 +162,7 @@
               ></ion-input>
             </ion-item>
             <ion-item>
-              <ion-button @click="setGasLimit">Set Limit</ion-button>
+              <ion-button @click="setGasLimit">设置</ion-button>
             </ion-item>
           </ion-list>
         </ion-content>
@@ -172,9 +172,9 @@
         <ion-header>
           <ion-toolbar>
             <ion-buttons slot="start">
-              <ion-button @click="gasPriceModal = false">Close</ion-button>
+              <ion-button @click="gasPriceModal = false">关闭</ion-button>
             </ion-buttons>
-            <ion-title>Set Gas Price</ion-title>
+            <ion-title>设置 Gas Price</ion-title>
           </ion-toolbar>
         </ion-header>
         <ion-content class="ion-padding">
@@ -190,7 +190,7 @@
               ></ion-input>
             </ion-item>
             <ion-item>
-              <ion-button @click="setGasPrice">Set Price</ion-button>
+              <ion-button @click="setGasPrice">设置</ion-button>
             </ion-item>
           </ion-list>
         </ion-content>
@@ -221,7 +221,7 @@ import {
   modalController,
 } from "@ionic/vue";
 import { ethers } from "ethers";
-import { approve, walletPing, walletSendData } from "@/extension/userRequest";
+import { approve, walletIssetPassword, walletPing, walletSendData } from "@/extension/userRequest";
 import { useRoute } from "vue-router";
 import {
   getSelectedNetwork,
@@ -250,7 +250,7 @@ const params = JSON.parse(decodedParam);
 const signTxData = ref("");
 const alertOpen = ref(false);
 const alertMsg = ref("");
-const loading = ref(true);
+const loading = ref(false);
 const contract = params.to;
 const gasPrice = ref(0);
 const gasLimit = ref(0);
@@ -301,6 +301,7 @@ const setItervalFn = async () => {
       loading.value = true;
       const { feed, price } = await getGasPrice();
       gasFeed = feed;
+      // @ts-ignore
       gasPrice.value = parseFloat(price.toString() ?? 0.1);
       await newGasData();
       loading.value = false;
@@ -318,15 +319,12 @@ const openModal = async () => {
     animated: true,
     focusTrap: false,
     backdropDismiss: false,
-    componentProps: {
-      unlockType: "transaction",
-    },
   });
   await modal.present();
   setUnlockModalState(true);
   const { role } = await modal.onWillDismiss();
   if (role === "confirm") return true;
-  await setUnlockModalState(false);
+  setUnlockModalState(false);
   return false;
 };
 
@@ -336,20 +334,8 @@ const onSign = async () => {
     clearInterval(interval);
   }
   const selectedAccount = await getSelectedAccount();
-  loading.value = false;
-  if ((selectedAccount.pk ?? "").length !== 66) {
-    const modalResult = await openModal();
-    if (modalResult) {
-      unBlockLockout();
-      loading.value = true;
-      approve(rid);
-    } else {
-      onCancel();
-    }
-  } else {
-    unBlockLockout();
-    approve(rid);
-  }
+  unBlockLockout();
+  approve(rid);
   loading.value = false;
 };
 
@@ -382,6 +368,11 @@ const newGasData = async () => {
 onIonViewWillEnter(async () => {
   (window as any)?.resizeTo?.(600, 860);
   blockLockout();
+  let r = await walletIssetPassword()
+  if (!r) {
+    await openModal()
+  }
+  loading.value = true
   const pGasPrice = getGasPrice();
   const pBalance = getBalance();
   const pGetPrices = getPrices();
@@ -392,6 +383,7 @@ onIonViewWillEnter(async () => {
   const { feed, price } = await pGasPrice;
   gasFeed = feed;
 
+  // @ts-ignore
   gasPrice.value = parseFloat(price.toString() ?? 0.1);
 
   const pEstimateGas = estimateGas({

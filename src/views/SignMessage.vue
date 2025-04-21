@@ -47,8 +47,8 @@
         </div>
       </ion-item>
       <ion-item>
-        <ion-button @click="onCancel">Cancel</ion-button>
-        <ion-button @click="onSign">Sign</ion-button>
+        <ion-button @click="onCancel">取消</ion-button>
+        <ion-button @click="onSign">签署</ion-button>
       </ion-item>
       <ion-item style="margin-top: 6px"
         >Auto-reject Timer:&nbsp;<b>{{ timerReject }}</b></ion-item
@@ -86,7 +86,7 @@ import {
   modalController,
   onIonViewWillEnter,
 } from "@ionic/vue";
-import { approve, walletPing } from "@/extension/userRequest";
+import { approve, walletIssetPassword, walletPing } from "@/extension/userRequest";
 import { useRoute } from "vue-router";
 import {
   getSelectedAccount,
@@ -134,6 +134,10 @@ const onCancel = () => {
 
 onIonViewWillEnter(async () => {
   blockLockout();
+  let r = await walletIssetPassword()
+  if (!r) {
+    await openModal()
+  }
   getSelectedAccount().then((account) => {
     intialSelectedAccount.value = account;
   });
@@ -153,15 +157,12 @@ const openModal = async () => {
     animated: true,
     focusTrap: false,
     backdropDismiss: false,
-    componentProps: {
-      unlockType: "message",
-    },
   });
   await modal.present();
   setUnlockModalState(true);
   const { role } = await modal.onWillDismiss();
   if (role === "confirm") return true;
-  await setUnlockModalState(false);
+  setUnlockModalState(false);
   return false;
 };
 
@@ -172,19 +173,8 @@ const onSign = async () => {
   }
   const selectedAccount = await getSelectedAccount();
   loading.value = false;
-  if ((selectedAccount.pk ?? "").length !== 66) {
-    const modalResult = await openModal();
-    if (modalResult) {
-      unBlockLockout();
-      loading.value = true;
-      approve(rid);
-    } else {
-      onCancel();
-    }
-  } else {
-    unBlockLockout();
-    approve(rid);
-  }
+  unBlockLockout();
+  approve(rid);
   loading.value = false;
 };
 </script>

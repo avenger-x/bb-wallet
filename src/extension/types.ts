@@ -14,8 +14,6 @@ export interface Contact {
 }
 
 export interface Account extends Contact {
-    pk: string
-    encPk: string
 }
 
 export interface Accounts {

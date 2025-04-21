@@ -16,7 +16,7 @@
     <ion-content class="ion-padding">
       <ion-item v-if="loading || Object.keys(networks).length < 1">
         <ion-label>No EVM Networks found</ion-label>
-        <ion-button @click="goToAddNetwork">Add Network</ion-button>
+        <ion-button @click="goToAddNetwork">添加网络</ion-button>
       </ion-item>
 
       <ion-list v-for="network of networks" :key="network.chainId">

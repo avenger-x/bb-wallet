@@ -21,10 +21,12 @@ import '@ionic/vue/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
-
+import VueVirtualScroller from 'vue-virtual-scroller';
 const app = createApp(App)
+// @ts-ignore
   .use(IonicVue, { scrollAssist: false, hideWhenKeyboardOpen: false, rippleEffect: false })
-  .use(router);
+  .use(router)
+  .use(VueVirtualScroller);
 
 router.isReady().then(() => {
   app.mount('#app');

@@ -61,7 +61,7 @@ const main = async () => {
     if (action === 'update') {
         const VERSION = GithubEvent.inputs.version;
         const FCONLY = GithubEvent.inputs.fconly;
-        const message = `Clear Wallet - New version ${VERSION} released! \n
+        const message = `BB Wallet - New version ${VERSION} released! \n
 - ChromeStore: https://bit.ly/clw-evm \n
 - ChangeLog: https://bit.ly/clw-cl \n
 - Submited by @andrei0x309 \n`
@@ -77,7 +77,7 @@ const main = async () => {
             })
             if (fcPostHash) {
                 await new Promise((resolve) => setTimeout(resolve, 3000));
-                const launchCasterMessage = `@launch New Clear Wallet version ${VERSION} released! \n\nChanges: ${changeLogUrl}`
+                const launchCasterMessage = `@launch New BB Wallet version ${VERSION} released! \n\nChanges: ${changeLogUrl}`
 
                 await fchubUtils.createFarcasterPost({
                     content: launchCasterMessage, replyTo: {

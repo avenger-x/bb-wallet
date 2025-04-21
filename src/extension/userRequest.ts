@@ -60,3 +60,29 @@ export const walletPing = () => {
                 })
         })
 }
+
+
+export const walletSetPassword = (password: string) => {
+        return new Promise((resolve) => {
+                chrome.runtime.sendMessage({ method: 'wallet_set_password', type: 'CLWALLET_CONTENT_MSG', data: password, }, (r) => {
+                        resolve(r)
+                })
+        })
+}
+
+export const walletIssetPassword = (): Promise<boolean> => {
+        return new Promise((resolve) => {
+                chrome.runtime.sendMessage({ method: 'wallet_isset_password', type: 'CLWALLET_CONTENT_MSG' }, (r) => {
+                        resolve(r)
+                })
+        })
+}
+
+
+export const walletGetAccounts = (): Promise<string[]> => {
+        return new Promise((resolve) => {
+                chrome.runtime.sendMessage({ method: 'wallet_get_accounts', type: 'CLWALLET_CONTENT_MSG' }, (r) => {
+                        resolve(r)
+                })
+        })
+}

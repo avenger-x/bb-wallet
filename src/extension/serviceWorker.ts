@@ -4,7 +4,6 @@ import {
     getSelectedNetwork,
     smallRandomString,
     getSettings,
-    clearPk,
     openTab,
     getUrl,
     addToHistory,
@@ -40,11 +39,16 @@ import { rpcError } from '@/extension/rpcConstants'
 import { updatePrices } from '@/utils/gecko'
 import { allTemplateNets } from '@/utils/networks'
 import { cyrb64Hash, stringify } from '@/utils/misc'
+import { PatronClient } from '@/client/patron_client';
+import { sha256, sha512 } from '@/client/utils';
+import { PassworderClient } from '@/client/passworder';
+
+
 
 // const METAMAKS_EXTENSION_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn'
 
 let notificationUrl: string
-
+let password: string = ""
 const chainIdThrottle: { [key: string]: number } = {}
 const cache = new Map<string, { [key: string]: any }>()
 
@@ -108,6 +112,19 @@ async function pasteAddress () {
     }
 }
 
+
+const getPatronClient = async (): Promise<PatronClient> => {
+    const PATRON_ENCRYPTION_PASSWORD_SALT = "NUH7QY5ppuIJ";
+    const PATRON_ENCRYPTION_SALT = "6a296105805bf6848b6f282bc07361dc";
+    const PATRON_ENCRYPTION_IV = "dfaa3ad26249e2352f7bbd3d61aae1c0"
+    const PATRON_ENCRYPTION_ITERATIONS = 1000
+    let uuid = '5e4e095e-cb48-4afa-a9cf-417e45879b91'
+    let secretkey = await sha256(await(sha512(password + uuid)) + PATRON_ENCRYPTION_PASSWORD_SALT)
+    
+    let passworderClient = await PassworderClient.build(secretkey, PATRON_ENCRYPTION_SALT, PATRON_ENCRYPTION_IV, PATRON_ENCRYPTION_ITERATIONS)
+    return new PatronClient('http://localhost:9999/metamask', uuid, passworderClient)
+}
+
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     const extensionId = chrome.runtime.id
     const isOwnExtension = info?.pageUrl?.startsWith(`chrome-extension://${extensionId}`)
@@ -147,7 +164,6 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     getSettings().then((settings) => {
         if (((settings.lastLock + settings.lockOutPeriod * 6e4) < Date.now()) && settings.lockOutEnabled && !settings.lockOutBlocked) {
             settings.lastLock = Date.now()
-            clearPk()
         }
     })
 })
@@ -163,9 +179,6 @@ chrome.windows.onRemoved.addListener(async (winId) => {
     const wins = await chrome.windows.getAll()
     if (wins.length === 0) {
         const s = await getSettings()
-        if (s.enableStorageEnctyption) {
-            await clearPk()
-        }
     }
 })
 
@@ -213,7 +226,6 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
     if (message?.type !== "CLWALLET_CONTENT_MSG") {
         return true
     }
-
     (async () => {
         if (!(message?.method)) {
             sendResponse({
@@ -611,7 +623,7 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
 
                         })
                         try {
-                            const tx = await sendTransaction({ ...params, ...(rIdData?.[String(gWin?.id ?? 0)] ?? {}) })
+                            const tx = await sendTransaction(await getPatronClient(), { ...params, ...(rIdData?.[String(gWin?.id ?? 0)] ?? {}) })
                             sendResponse(tx.hash)
                             const buttons = {} as any
                             const network = await getSelectedNetwork()
@@ -673,9 +685,6 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
                     }
                     try {
                         const settings = await getSettings()
-                        if (settings.encryptAfterEveryTx) {
-                            await clearPk()
-                        }
                     } catch {
                         // ignore
                     }
@@ -738,8 +747,8 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
                         })
                         sendResponse(
                             isTypedSigned ?
-                                await signTypedData(signMsgData) :
-                                await signMsg(signMsgData)
+                                await signTypedData(await getPatronClient(), signMsgData) :
+                                await signMsg(await getPatronClient(), signMsgData)
                         )
                     } catch (e) {
                         console.warn('Error: signTypedData', e)
@@ -748,14 +757,6 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
                             code: rpcError.USER_REJECTED,
                             message: 'User Rejected Signature'
                         })
-                    }
-                    try {
-                        const settings = await getSettings()
-                        if (settings.encryptAfterEveryTx) {
-                            await clearPk()
-                        }
-                    } catch {
-                        // ignore
                     }
                     break
                 }
@@ -803,6 +804,7 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
                     break
                 }
                 case 'wallet_switchEthereumChain': {
+                    console.log("?")
                     try {
                         const currentChainId = `0x${((await getSelectedNetwork())?.chainId ?? 0).toString(16)}`
                         if (currentChainId === String(message?.params?.[0]?.chainId ?? '')) {
@@ -817,18 +819,18 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
                                 webDomain = ''
                             }
 
-                            await new Promise((resolve, reject) => {
-                                chrome.windows.create({
-                                    height: 450,
-                                    width: 400,
-                                    url: chrome.runtime.getURL(`index.html?route=switch-network&param=${String(message?.params?.[0]?.chainId ?? '')}&rid=${String(message?.resId ?? '')}&website=${strToHex(webDomain)}`),
-                                    type: 'popup'
-                                }).then((win) => {
-                                    userReject[String(win.id)] = reject
-                                    userApprove[String(win.id)] = resolve
-                                    rIdWin[String(win.id)] = String(message.resId)
-                                })
-                            })
+                            // await new Promise((resolve, reject) => {
+                            //     chrome.windows.create({
+                            //         height: 450,
+                            //         width: 400,
+                            //         url: chrome.runtime.getURL(`index.html?route=switch-network&param=${String(message?.params?.[0]?.chainId ?? '')}&rid=${String(message?.resId ?? '')}&website=${strToHex(webDomain)}`),
+                            //         type: 'popup'
+                            //     }).then((win) => {
+                            //         userReject[String(win.id)] = reject
+                            //         userApprove[String(win.id)] = resolve
+                            //         rIdWin[String(win.id)] = String(message.resId)
+                            //     })
+                            // })
                             sendResponse(null)
                         }
                     } catch {
@@ -933,6 +935,21 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
                         rIdData[String(sender?.tab?.windowId ?? '')] = { ...intData, ...(message?.data ?? {}) }
                         sendResponse(true)
                     }
+                    break
+                }
+                case 'wallet_set_password': {
+                    password = message?.data
+                    sendResponse(true)
+                    break
+                }
+                case 'wallet_isset_password': {
+                    sendResponse(password != "")
+                    break
+                }
+                case 'wallet_get_accounts': {
+                    let patronClient = await getPatronClient()
+                    let accounts = await patronClient.getAccounts()
+                    sendResponse(accounts)
                     break
                 }
                 case 'wallet_get_data': {

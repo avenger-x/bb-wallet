@@ -21,6 +21,7 @@ const pageListener = (
   sender: any,
   sendResponse: (a: any) => any
 ) => {
+  console.log("shit")
   if (chrome.runtime.lastError) {
     console.info("Error receiving message:", chrome.runtime.lastError);
   }
