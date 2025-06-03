@@ -247,7 +247,7 @@ const onAddNetwork = async () => {
 
   const network = {
     name: name.value,
-    chainId: chainId.value,
+    chainId: Number(chainId.value),
     rpc: rpc.value,
     ...(symbol.value ? { symbol: symbol.value } : {}),
     ...(explorer.value ? { explorer: explorer.value } : {}),

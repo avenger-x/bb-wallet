@@ -59,10 +59,13 @@
           </ion-item>
           <div class="ion-padding" slot="content">
             <ion-item>
-              <ion-input label="UUID"></ion-input>
+              <ion-input label="envId" :value="settings.s.UUID" @ion-change="changeEnvId"></ion-input>
             </ion-item>
+          </div>
+          <div class="ion-padding" slot="content">
             <ion-item>
-              <ion-input label=""></ion-input>
+              <ion-label>锁屏密码</ion-label>
+              <ion-button color="danger" @click="resetWalletPassword">重置</ion-button>
             </ion-item>
           </div>
         </ion-accordion>
@@ -101,13 +104,10 @@ import {
   getSettings,
   setSettings,
   getAccounts,
-  saveSelectedAccount,
-  replaceAccounts,
-  openTab,
+  saveWalletPassword,
+  storageSave,
+  storageRemove,
 } from "@/utils/platform";
-import { decrypt, encrypt, getCryptoParams } from "@/utils/webCrypto";
-import { Account } from "@/extension/types";
-import { exportFile } from "@/utils/misc";
 import type { Settings } from "@/extension/types";
 import {
   IonContent,
@@ -122,21 +122,17 @@ import {
   onIonViewWillEnter,
   IonList,
   IonToggle,
-  IonModal,
   IonInput,
   IonAccordion,
   IonAccordionGroup,
   IonRadioGroup,
   IonRadio,
-  IonButtons,
   IonAlert,
   IonToast,
 } from "@ionic/vue";
 console.log("shit")
 const loading = ref(true);
 const mpModal = ref(false);
-const mpPass = ref("");
-const mpConfirm = ref("");
 const updateKey = ref(0);
 const alertOpen = ref(false);
 const alertMsg = ref("");
@@ -168,20 +164,16 @@ const saveSettings = async () => {
   loading.value = false;
 };
 
+const resetWalletPassword = async () => {
+  await storageRemove('wallet_password')
+}
 
-const changeAutoLock = async () => {
-  settings.s.lockOutEnabled = !settings.s.lockOutEnabled;
-  updateKey.value++;
+const changeEnvId = async (event) => {
+  settings.s.UUID = event.detail.value;
   await saveSettings();
-  defaultAccordionOpen.value = "1";
+  defaultAccordionOpen.value = "2";
 };
 
-const changePermaLock = async () => {
-  settings.s.encryptAfterEveryTx = !settings.s.encryptAfterEveryTx;
-  updateKey.value++;
-  await saveSettings();
-  defaultAccordionOpen.value = "1";
-};
 
 const changeCopyLowerCaseAddress = async () => {
   settings.s.copyLowerCaseAddress = !settings.s?.copyLowerCaseAddress;
@@ -196,55 +188,6 @@ const changeTheme = async (theme: "system" | "light" | "dark") => {
   settings.s.theme = theme;
   await saveSettings();
   defaultAccordionOpen.value = "2";
-};
-
-
-const validateFile = () => {
-  return new Promise((resolve) => {
-    try {
-      if (!importFile.value?.value?.length) {
-        return resolve({
-          error: "Import json file is missing",
-        });
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const json = JSON.parse(event?.target?.result as string);
-        if (!json.length) {
-          return resolve({
-            error:
-              'JSON format is wrong. Corrrect JSON format is: [{ "name": "Account Name", "pk": "Private Key", "address": "0x..." },{...}]',
-          });
-        }
-        const test = json.some(
-          (e: any) =>
-            !("pk" in e) ||
-            !("name" in e) ||
-            !("address" in e) ||
-            !(e.pk.length === 66 || e.pk.length === 64)
-        );
-        if (test) {
-          return resolve({
-            error:
-              'JSON format is wrong. Corrrect JSON format is: [{ "name": "Account Name", "pk": "Private Key", "address": "0x..."  },{...}], Also PK must be valid (66 || 64 length) !',
-          });
-        }
-        return resolve({ error: false, json });
-      };
-      reader.readAsText(importFile.value?.files?.[0] as File);
-    } catch {
-      return resolve({
-        error: "Parsing JSON file",
-      });
-    }
-  });
-};
-
-const getPassword = () => {
-  return new Promise((resolve, reject) => {
-    modalGetPassword.value = { resolve, reject };
-    mpModal.value = true;
-  });
 };
 
 
@@ -264,19 +207,5 @@ onIonViewWillEnter(async () => {
   loading.value = false;
 });
 
-const setTime = async () => {
-  loading.value = true;
-  if (settings.s.lockOutPeriod < 2 || settings.s.lockOutPeriod > 120) {
-    loading.value = false;
-    alertMsg.value = "Auto-lock period must be between 2 and 120";
-    alertOpen.value = true;
-    return;
-  }
-  settings.s.lockOutPeriod = Math.trunc(settings.s.lockOutPeriod);
-  await saveSettings();
-  loading.value = false;
-  toastMsg.value = "Auto-lock period was set";
-  toastState.value = true;
-};
 
 </script>

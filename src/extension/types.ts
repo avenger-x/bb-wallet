@@ -55,6 +55,7 @@ export interface Settings {
     theme: 'system' | 'light' | 'dark'
     lastLock: number
     lockOutBlocked: boolean
+    UUID: string
     copyLowerCaseAddress?: boolean
 }
 

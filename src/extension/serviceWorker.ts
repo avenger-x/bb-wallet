@@ -11,6 +11,10 @@ import {
     strToHex,
     numToHexStr,
     enableRightClickPasteAddr,
+    storageGet,
+    storageSave,
+    getWalletPassword,
+    saveWalletPassword,
 } from '@/utils/platform';
 import {
     userApprove,
@@ -48,7 +52,6 @@ import { PassworderClient } from '@/client/passworder';
 // const METAMAKS_EXTENSION_ID = 'nkbihfbeogaeaoehlefnkodbefgpgknn'
 
 let notificationUrl: string
-let password: string = ""
 const chainIdThrottle: { [key: string]: number } = {}
 const cache = new Map<string, { [key: string]: any }>()
 
@@ -118,11 +121,12 @@ const getPatronClient = async (): Promise<PatronClient> => {
     const PATRON_ENCRYPTION_SALT = "6a296105805bf6848b6f282bc07361dc";
     const PATRON_ENCRYPTION_IV = "dfaa3ad26249e2352f7bbd3d61aae1c0"
     const PATRON_ENCRYPTION_ITERATIONS = 1000
-    let uuid = '5e4e095e-cb48-4afa-a9cf-417e45879b91'
-    let secretkey = await sha256(await(sha512(password + uuid)) + PATRON_ENCRYPTION_PASSWORD_SALT)
+    let settings = await getSettings()
+    let password = await getWalletPassword()
+    let secretkey = await sha256(await(sha512(password + settings.UUID)) + PATRON_ENCRYPTION_PASSWORD_SALT)
     
     let passworderClient = await PassworderClient.build(secretkey, PATRON_ENCRYPTION_SALT, PATRON_ENCRYPTION_IV, PATRON_ENCRYPTION_ITERATIONS)
-    return new PatronClient('http://localhost:9999/metamask', uuid, passworderClient)
+    return new PatronClient('http://localhost:9999/metamask', settings.UUID, passworderClient)
 }
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
@@ -938,12 +942,13 @@ const mainListner = (message: RequestArguments, sender: any, sendResponse: (a: a
                     break
                 }
                 case 'wallet_set_password': {
-                    password = message?.data
+                    await saveWalletPassword(message?.data)
                     sendResponse(true)
                     break
                 }
                 case 'wallet_isset_password': {
-                    sendResponse(password != "")
+                    let password = await getWalletPassword()
+                    sendResponse(password !== undefined)
                     break
                 }
                 case 'wallet_get_accounts': {

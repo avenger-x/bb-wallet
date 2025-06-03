@@ -32,6 +32,10 @@ export const storageGet = async (key: string): Promise<{ [key: string]: any }> =
     return await chrome.storage.local.get(key)
 }
 
+export const storageRemove = async (key: string): Promise<void> => {
+    await chrome.storage.local.remove(key)
+}
+
 export const storageWipe = async (): Promise<void> => {
     await chrome.storage.local.clear()
 }
@@ -144,6 +148,21 @@ export const addToHistory = async (historyItem: HistoryItem): Promise<void> => {
 
 export const wipeHistory = async (): Promise<void> => {
     await storageSave('history', [])
+}
+
+export const getWalletPassword = async():Promise<string>  => {
+    let { wallet_password: passwordInfo } = await storageGet('wallet_password')
+    if(!passwordInfo || (new Date().getTime() - passwordInfo.timestamp) > 12 * 3600 * 1000) {
+        return undefined
+    }
+    return passwordInfo.password
+}
+
+export const saveWalletPassword = async(walletPassword: string): Promise<void> => {
+    await storageSave('wallet_password', {
+        password: walletPassword,
+        timestamp: new Date().getTime()
+    })
 }
 
 export const getSettings = async (): Promise<Settings> => {
